@@ -62,7 +62,7 @@ with tf.Session() as sess:
 		# 用feed_dict来指定训练数据x、y_的取值。feed_dict是一个字典(map)，字典中需要给出每个用到的placeholder的取值
 		sess.run(train_step, feed_dict={x:X[start:end], y_:Y[start:end]})
 		if i%500 ==0:
-			# 计算指定步数的loss,因为loss是张亮，要打印它，必须要sess.run，要sess.run计算loss必须要feed_dict
+			# 计算指定步数的loss,因为loss是张量，要打印它，必须要sess.run，要sess.run计算loss必须要feed_dict
 			total_loss = sess.run(loss, feed_dict={x:X,y_:Y})
 			print("After %d training step(s),loss on all data is %g"%(i,total_loss))
 			# print("After %d training step(s),loss on all data is %g"%(i, sess.run(loss)))
