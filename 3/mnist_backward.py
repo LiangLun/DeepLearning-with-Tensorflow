@@ -15,14 +15,14 @@ MODEL_SAVE_PATH = "./model/"
 MODEL_NAME = "mnist_model"
 
 def backward(mnist):
-	x = tf.placeholder(tf.float32, [None,mnist_forward.INPUT_NODE])
-	y_ = tf.placeholder(tf.float32, [None,mnist_forward.OUTPUT_NODE])
+	x = tf.placeholder(tf.float32, [None, mnist_forward.INPUT_NODE])
+	y_ = tf.placeholder(tf.float32, [None, mnist_forward.OUTPUT_NODE])
 	y = mnist_forward.forward(x, REGULARIZER)
 	global_step = tf.Variable(0, trainable=False)
 
 	# 用了交叉熵和softmax
 	# 注意ce的两种不同的tensorflow用法，其结果都一样。第一个的labels大小是BATCH_SIZE，第二个的labels大小是BATCH_SIZE*NUM_CLASSES
-	ce = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=y, labels=tf.argmax(y_,1)) # 只能用于单分类问题
+	ce = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=y, labels=tf.argmax(y_, 1)) # 只能用于单分类问题
 	# ce = tf.nn.softmax_cross_entropy_with_logits(logits=y,labels=y_) # 可用于多分类
 	cem = tf.reduce_mean(ce)
 	loss = cem + tf.add_n(tf.get_collection('losses'))
@@ -31,7 +31,7 @@ def backward(mnist):
 	learning_rate = tf.train.exponential_decay(
 		LEARNING_RATE_BASE,
 		global_step,
-		mnist.train.num_examples/BATCH_SIZE,
+		mnist.train.num_examples / BATCH_SIZE,
 		LEARNING_RATE_DECAY,
 		staircase=True)
 
@@ -40,10 +40,10 @@ def backward(mnist):
 	
 	# 滑动平均（影子值）：记录了一段时间内模型所有参数w和b过往各自的平均，增加了模型的范化性
 	# 每次运行变量更新时，影子的更新公式为：参数最新影子=衰减率*参数之前的影子+（1-衰减率）*最新参数
-	ema = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY,global_step) # MOVING_AVERAGE_DECAY 表示滑动平均衰减率，一般会赋接近 1 的值，global_step 表示当前训练了多少轮
+	ema = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY, global_step) # MOVING_AVERAGE_DECAY 表示滑动平均衰减率，一般会赋接近 1 的值，global_step 表示当前训练了多少轮
 	ema_op = ema.apply(tf.trainable_variables())  # 对所有待优化的参数求滑动平均。ema.apply()函数实现对括号内参数求滑动平均，tf.trainable_variables()函数实现把所有待训练参数汇总为列表。
 	# ema_op = ema.apply(tf.Variable(0))
-	with tf.control_dependencies([train_step,ema_op]): # 实现将滑动平均和训练过程同步运行
+	with tf.control_dependencies([train_step, ema_op]): # 实现将滑动平均和训练过程同步运行
 		train_op = tf.no_op(name='train')
 
 	# 实例化saver对象。后面会调用saver.save()方法，向文件夹中写入包含当前模型中所有可训练变量的 checkpoint 文件。
@@ -64,11 +64,11 @@ def backward(mnist):
 		# 利用 sess.run( )函数实现模型的训练优化过程，并每间隔一定轮数保存一次模型。
 		for i in range(STEPS):
 			xs, ys = mnist.train.next_batch(BATCH_SIZE)
-			_,loss_value,step = sess.run([train_op,loss,global_step], feed_dict={x:xs,y_:ys}) # 开始训练模型
+			_, loss_value, step = sess.run([train_op, loss, global_step], feed_dict={x:xs, y_:ys}) # 开始训练模型
 			# print(y, labels=tf.argmax(y_,1))
-			if i%1000 == 0:
-				print("After %d training step(s),loss on training batch is %g."%(step,loss_value))
-				saver.save(sess, os.path.join(MODEL_SAVE_PATH,MODEL_NAME), global_step=global_step) # 将神经网络模型中所有的参数等信息保存到指定的路径中，并在存放网络模型的文件夹名称中注明保存模型时的训练轮数
+			if i % 1000 == 0:
+				print("After %d training step(s),loss on training batch is %g." % (step, loss_value))
+				saver.save(sess, os.path.join(MODEL_SAVE_PATH, MODEL_NAME), global_step=global_step) # 将神经网络模型中所有的参数等信息保存到指定的路径中，并在存放网络模型的文件夹名称中注明保存模型时的训练轮数
 
 def main():
 	# 使用input_data模块中的read_data_sets()函数加载mnist数据集
