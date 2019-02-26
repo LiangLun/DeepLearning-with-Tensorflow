@@ -15,13 +15,13 @@ def get_bias(shape):
 	return b
 
 def forward(x,regularizer):
-	w1 = get_weight([2,11], regularizer)
+	w1 = get_weight([2, 11], regularizer)
 	b1 = get_bias([11])
 	# 这里用激活函数relu来实现去线性化
 	y1 = tf.nn.relu(tf.matmul(x, w1) + b1)
 
-	w2 = get_weight([11,1], regularizer)
+	w2 = get_weight([11, 1], regularizer)
 	b2 = get_bias([1])
-	y = tf.matmul(y1,w2)+b2  #输出不用激活
+	y = tf.matmul(y1, w2) + b2  #输出不用激活
 	return y
 	
